@@ -1,0 +1,11 @@
+{
+  "name": "ps2pdf",
+  "version": "1.0.0",
+  "description": "This is a sample of aplication to run in multiples servers. A distributed system for convert ps 2 pdf and pdf 2 ps.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
