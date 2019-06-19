@@ -58,6 +58,7 @@ class Worker{
               console.log('exec error: ' + error);
             }
         });
+        
     }
 
     convertPDFToPS(file){

@@ -21,7 +21,6 @@ async function getAllKeys(){
     await client.keys('*', function (err, keys) {
         if (err) return console.log(err);
       
-       
         allKeys = keys;
         
     }); 
