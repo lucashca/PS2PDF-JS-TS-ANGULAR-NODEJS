@@ -1,0 +1,141 @@
+body {
+    font-size: 28px;
+    background-image: url("assets/imagens/background.jpg");
+    background-color: #cccccc;
+  }
+
+  ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    top: 0;
+  }
+  
+  li {
+    float: left;
+  }
+  
+  li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+  }
+  
+  li a:hover {
+    background-color: #111;
+  }
+  
+
+ .header{
+        margin-top: -35px;
+        padding: 20px;
+        background-color:rgba(105, 136, 194, 0.596);
+        height: 200px;
+    } 
+
+  .active {
+    background-color: #4CAF50;
+  }
+
+  .mycontainer{
+      padding: 5%;
+      width: 80%;
+      margin-left: 10%;
+      margin-top: 2%;
+      
+      background-color: #eaeaea;
+      box-shadow: 5px 10px 10px 10px #888888;
+  }
+  
+  .uploadfilecontainer {
+    background-image: url("assets/imagens/cloud.png");
+    background-repeat: no-repeat;
+    background-size: 100px;
+    background-position: center;
+    height: 200px;
+    width: 80%;
+    margin: 20px auto;
+    border: 2px dashed #1C8ADB;
+    border-radius: 10px;
+}
+
+.uploadfilecontainer:hover {
+    cursor: pointer;
+    background-color: #9ecbec !important;
+    opacity: 0.8;
+}
+
+.filtro {
+ 
+  width: 48%;
+  height: 65px;
+  background: #ffffff;
+  border: 1px dashed;
+  border-radius: 12px;
+  border-top-right-radius: 0%;
+  border-bottom-right-radius: 0%;
+  
+  margin: -10px;
+ 
+  position: absolute;
+  
+  opacity: 0.4;
+}
+
+.files-list {
+  
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    height: 65px;
+    margin: 10px auto;
+    background: #ffffff;
+    border: 1px dashed;
+    border-radius: 12px;
+    padding: 10px;
+    color: #1c8adb;
+}
+
+
+.files-list .delete-file {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.files-list .delete-file img {
+    width: 30px;
+}
+
+.converter-box{
+    height: 50px;
+    width: 80%;
+    margin: 20px auto;
+    border-radius: 10px;
+}
+
+.converter-btn{
+    height: 50px;
+    width: 80%;
+    margin-left: 10%;
+    border: 2px dashed #1C8ADB;
+    border-radius: 10px;
+
+}
+.converter-btn:hover {
+    cursor: pointer;
+    background-color: #9ecbec !important;
+    opacity: 0.8;
+}
+
+.my-drop-zone { border: dotted 3px lightgray; }
+.nv-file-over { border: dotted 3px red; } /* Default class applied to drop zones on over */
+.another-file-over-class { border: dotted 3px green; }
+
+html, body { height: 100%; }
