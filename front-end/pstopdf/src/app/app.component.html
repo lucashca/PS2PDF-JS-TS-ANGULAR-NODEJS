@@ -16,7 +16,7 @@
     </div>
     
     <div  class="files-list" *ngFor="let item of uploader.queue">
-        <div class="progress filtro" style="">
+        <div class="progress filtro" >
             <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" role="progressbar" [ngStyle]="{ 'width': item.progress + '%' }"></div>
         </div>
         <p> {{ item?.file?.name }} </p>
@@ -24,8 +24,7 @@
             <img [src]="item.isSuccess ? 'assets/imagens/ok.png':'assets/imagens/Recycle_Bin_Full.png'" alt="image">
         </button>
 
-           
-       
+
     </div>
 
     
@@ -35,7 +34,7 @@
 
 
     <div  class="files-list" *ngFor="let item of convertidos">
-        <div class="progress filtro" style="">
+        <div class="progress filtro" >
             <div class="progress-bar progress-bar-striped bg-success progress-bar-animated" role="progressbar" [ngStyle]="{ 'width': item.progress + '%' }"></div>
         </div>
         <p> {{ item?.file?.name }} </p>

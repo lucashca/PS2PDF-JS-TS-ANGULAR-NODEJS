@@ -19,41 +19,54 @@ export class AppComponent implements OnInit {
     'application/ps'
   ];
 
-  constructor(private ConvertService: ConvertService){}
+// tslint:disable-next-line: no-shadowed-variable
+  constructor(private ConvertService: ConvertService) {}
 
 
-  public uploader: FileUploader = new FileUploader({url: URL, itemAlias: 'photo'});
+  public uploader: FileUploader = new FileUploader(
+    {
+      url: URL,
+      disableMultipart : false,
+      autoUpload: false,
+      method: 'post',
+      itemAlias: 'file',
+      allowedMimeType: ['application/pdf','application/postscript']
+    });
 
-  public hasBaseDropZoneOver:boolean = false;
-  public hasAnotherDropZoneOver:boolean = false;
- 
-  public fileOverBase(e:any):void {
+
+  public hasBaseDropZoneOver = false;
+  public hasAnotherDropZoneOver = false;
+
+  public fileOverBase(e: any): void {
     this.hasBaseDropZoneOver = e;
   }
- 
-  public fileOverAnother(e:any):void {
+
+  public fileOverAnother(e: any): void {
     this.hasAnotherDropZoneOver = e;
   }
   ngOnInit() {
-    this.uploader.onAfterAddingFile = (file) => { file.withCredentials = false; };
+    this.uploader.onAfterAddingFile = (file) => { file.withCredentials = false;
+
+    };
     this.uploader.onCompleteItem = (item: any, response: any, status: any, headers: any) => {
          console.log('ImageUpload:uploaded:', item, status, response);
-      
+
     };
 
-    
+
  }
 
 
- 
+
   uploadFile(event) {
-    
+
+// tslint:disable-next-line: prefer-for-of
     for (let index = 0; index < event.length; index++) {
       const element = event[index];
       if (this.aceptableTypes.indexOf(element.type) > -1) {
-        this.files.push(element)
+        this.files.push(element);
       } else {
-        alert("Incorrect format, only place PS or PDF");
+        alert('Incorrect format, only place PS or PDF');
       }
 
     }
@@ -62,55 +75,58 @@ export class AppComponent implements OnInit {
     this.files.splice(index, 1);
   }
 
+
   sendFilesToConvert() {
-    console.log("Enviando arquivos!");
-    for (let f of this.files) {
+
+    this.uploader.uploadAll();
+    console.log('Enviando arquivos!');
+    for (const f of this.files) {
       this.upload(f);
-     if (f.type == 'application/pdf') {
-        //this.convertFilePDF(f);
-        
+      if (f.type == 'application/pdf') {
+        // this.convertFilePDF(f);
+
       }
       if (f.type == 'application/ps') {
-        //this.convertFilePS(f);
+        // this.convertFilePS(f);
       }
     }
   }
 
-  upload(file){
+  upload(file) {
     const formData = new FormData();
     formData.append('file', file);
-    console.log("upload");
+    console.log('upload');
     this.ConvertService.upload(formData).subscribe(
-      (res) =>console.log(res),
+      (res) => console.log(res),
       (err) => console.log(err)
     );
   }
-  convertFilePS(file){
-    console.log("ConvertFilePS")
+  convertFilePS(file) {
+    console.log('ConvertFilePS');
     return this.ConvertService.convertFilePS(file).subscribe(
-      (data)=>{
+      (data) => {
 
     },
-    err =>{
+    err => {
 
     },
-    ()=>{
+    () => {
 
     }
     );
   }
 
-  convertFilePDF(file){
-    console.log("ConvertFilePDF")
+  convertFilePDF(file) {
+    console.log('ConvertFilePDF');
     return this.ConvertService.convertFilePDF(file).subscribe(
-      (data)=>{
+      (data) => {
 
     },
-    err =>{
+    err => {
 
     },
-    ()=>{
-      
+    () => {
+
     }
     );
   }

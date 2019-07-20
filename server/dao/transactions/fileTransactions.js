@@ -1,7 +1,6 @@
 const dbConnection = require("../dbConnection");
 const fileQueries = require("../queries/filesQueries");
 
-
 module.exports = class FileDao {
   async saveEntity(entity) {
     let con = await dbConnection();
@@ -10,7 +9,7 @@ module.exports = class FileDao {
       
       let savedFile = await con.query(
         fileQueries.insert_file,
-        [entity.name, entity.size,entity.format,entity.date,entity.file,entity.user_iduser]
+        [entity.originalName, entity.mimeType,entity.size,entity.path,entity.sysInfo,entity.fileName,entity.ipRequest,entity.host,entity.file,entity.date]
       );
       await con.query("COMMIT");
       entity.idfiles = savedFile.insertId;
