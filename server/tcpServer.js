@@ -24,7 +24,7 @@ const redisClient = redis.createClient();
 
 
 const stateEnum = {
-  WAITING:'WAITING',
+  WAITING:'waiting',
   IN_PROGRESS:'progress',
   READY:'ready'
 }
@@ -60,19 +60,24 @@ function saveFile(file){
 function createFileData(req){
   let path = req.file.path;
   var f = fs.readFileSync(path,"utf8");
+  console.log(req.file.originalname);
   let file = new FileEntity(req.file.originalname,req.file.mimetype,req.file.size,req.file.path,req.rawHeaders[9],req.file.filename,req.connection.remoteAddress,req.headers.host,f,new Date())
-  saveFile(file);
+  //saveFile(file);
   createJob(file);
 }
 
 
 function createJob(file){
-  let value = 
+  let key = 'job-'+Date.now();
+ let value = 
   {
-    path:file.path,
+    fileName:file.fileName,
+    originalname:file.originalName,
     state:stateEnum.WAITING
+
   }
-  redisClient.set(file.fileName,JSON.stringify(value));  
+  console.log(JSON.stringify(value));
+  redisClient.set(key,JSON.stringify(value));  
   
 }
 
