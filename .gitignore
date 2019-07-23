@@ -1,3 +1,6 @@
 # Don't track content of these folders
 node_modules/
 server/uploads
+server/
+server/temp/converted/pdf/test.ps(copiar 1)(copiar 1)(copiar).ps-Converted by ps2pdf.PDF
+server/temp/converted/pdf/test.ps(copiar 1)(copiar 1)(copiar).ps-Converted by ps2pdf.PDF

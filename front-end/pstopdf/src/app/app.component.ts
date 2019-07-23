@@ -4,9 +4,9 @@ import { FileUploader, FileSelectDirective } from 'ng2-file-upload/ng2-file-uplo
 import { throwIfEmpty } from 'rxjs/operators';
 
 
-const URL = 'http://localhost:4000/api/upload';
-
-const donwloadURL = 'http://localhost:4000/download/';
+const serverURL = 'http://35.188.196.4:4000/';
+const URL = serverURL + 'api/upload';
+const donwloadURL = serverURL + 'download/';
 
 
 @Component({
@@ -81,7 +81,7 @@ export class AppComponent implements OnInit {
           if(!this.onceTime){
             this.getFilesConverted();
             this.getStatusNetwork();
-            this.endUpload();
+           // this.endUpload();
             this.onceTime = true;
           }
           await this.resolveAfterXSeconds(10);        

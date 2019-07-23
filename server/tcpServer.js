@@ -17,7 +17,7 @@ const request = require('request')
 //Setup
 //*********************************************************
 const PORT = process.env.PORT || 4000;
-const DIR = './uploads';
+const DIR = './temp/uploads';
 const fileDao = new FileDao();
 const app = express();
 const redisClient = redis.createClient();
@@ -217,6 +217,7 @@ app.post('/done', function (req, res) {
   }
   console.log(data.value.key,data.value.value)
   doneFIles.set(data.value.key,data.value.value);
+  console.log(doneFIles);
   let r = JSON.stringify({msg:DEFINED_MSGS.OK});
   res.end(r);
 });
@@ -225,6 +226,7 @@ app.post('/getMyconvertedFile',function(req,res){
   let key = JSON.parse(req.body.key);
   if(contFinishUploades == allRequest.size){
     verifyWorkers();
+    contFinishUploades = 0;
   }
   if(doneFIles.has(key)){
     res.end(JSON.stringify({msg:DEFINED_MSGS.OK}));
@@ -234,9 +236,10 @@ app.post('/getMyconvertedFile',function(req,res){
 });
 
 app.get('/endUpload',async function(req,res){
-  await resolveAfterXSeconds(contFinishUploades/10);
-  console.log("endUplaoa");
-  verifyWorkers();
+  if(contFinishUploades == 0){
+    console.log("endUplaoa");
+    verifyWorkers();
+  }
 });
 
 app.get('/download/:key',function(req,res){
@@ -276,14 +279,18 @@ app.post('/api/upload',upload.single('file'), function (req, res) {
 });
 
 async function verifyWorkers(){
+  let maxNodes = 15;
   need = parseInt(allRequest.size/cargaTrabalho);
  
   if (need==0) need =1;
 
-  if(need > nodes.length){ 
+  if(need > nodes.length && nodes.length < 5){ 
     need =  need - nodes.length;
+
     console.log("Criando");
-    if(need > 5) need  = 5;
+    if(need > maxNodes) need  = maxNodes;
+    if(need+nodes.length > maxNodes) need = maxNodes- nodes.length;
+    
     console.log("Criando Workers "+need); 
     for(let i = 0;i < need; i++){
       await resolveAfterXSeconds(0.5);
