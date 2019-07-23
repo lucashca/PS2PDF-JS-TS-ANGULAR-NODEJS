@@ -1,2 +1,5 @@
 # Don't track content of these folders
 node_modules/
+server/temp/uploads
+server/temp/converted/pdf/*
+server/temp/converted/ps/*
