@@ -1,98 +1,372 @@
-// Author Lucas Henrique Costa Araújo
-// Date 17/06/2019
-
-
-const UserDao = require("./dao/transactions/userTrasactions");
-const userDao = new UserDao();
+// Imports
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+const path = require('path');
+const express = require('express');
+const multer = require('multer');
+const bodyParser = require('body-parser')
 const FileDao = require("./dao/transactions/fileTransactions");
-const fileDao = new FileDao();
-
-var sys = require('sys')
-var exec = require('child_process').exec;
-var child;
-
+const FileEntity = require('./entities/fileEntity');
 const fs = require('fs');
+const redis = require('redis');
+const cmdExecutor = require('child_process').exec;
+const request = require('request')
+
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
 
 
+//Setup
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+const PORT = process.env.PORT || 4000;
+const DIR = './temp/uploads';
+const fileDao = new FileDao();
+const app = express();
+const redisClient = redis.createClient();
+var doneFIles = new Map();
+var allRequest = new Map();
+var dataNodes = new Map();
 
-filePath = "./dataFolder/ps/a.ps"
+var host = "localhost";
+var myHost ="localhost:4000";
+var cargaTrabalho = 5;
 
-var size = fs.statSync(filePath).size;
-var file = fs.readFileSync(filePath,"utf8");
+var iHaveWorkers = false;
+var nodes = [];
+var cmds = [];
 
-console.log(file)
-//var file = new Buffer(file, 'binary').toString('base64');
-    
+var contFinishUploades = 0;
+var contFinishRedis = 0;
+var jobNames = [];
 
-const app = async () => {
-    let savedUser = await userDao.saveEntity({
-        name: "Luacs ",
-        email: "lucas@lucas",
-        password:"senha"
-    });
-    console.log("Saved todo --> ", savedUser)
+var withoutWorkers = 0;
 
-    savedUser.completed = 1;
-    let isUpdated = await userDao.updateEntity(savedUser);
-    console.log("Is it updated --> ", isUpdated);
-
-    let todoList = await userDao.readEntities();
-    console.log("List of todo --> ", todoList);
-
-    let isDeleted = await userDao.deleteEntity(savedUser.id);
-    console.log("Is it deleted --> ", isDeleted)
-
+const stateEnum = {
+  WAITING:'waiting',
+  IN_PROGRESS:'progress',
+  READY:'ready'
 }
 
 
-async function ps2pdf(){
-
-
-
+const DEFINED_MSGS = {
+  LIVE: 'LIVE',
+  BLOCK:'BLOCK' ,
+  NO:'NO',
+  OK:'OK',
+  DONE:'DONE',
 }
 
-const app2 = async () => {
-    let savedFiles = await fileDao.saveEntity({
-        name: "Luacs",
-        size: size,
-        format:"ps",
-        date:new Date(),
-        file:file,
-        user_iduser: "1"
-    });
-    //console.log("Saved todo --> ", savedUser)
-    let files = await fileDao.readEntities(savedFiles.idfiles);
-    //console.log("File -->",files[0].file.data);
-    name = files[0].name;
-    format = files[0].format;
-    encode = files[0].file.data;
-    // Decode from base64
-    // console.log(encode);
-    var decodedFile = new Buffer(encode, 'base64').toString('binary');
-    //console.log(decodedFile);
-    fileName = name +"-bd."+ format;
-    //console.log(fileName);
-    fs.writeFile("./dataFolder/ps/"+fileName, decodedFile, (err) => {
-        if (err) throw err;
-    
-        console.log("The file was succesfully saved!");
-        cmd = "ps2pdf ./dataFolder/ps/"+fileName+ " ./dataFolder/pdf/"+name+"-bd.pdf";
-        child = exec(cmd, function (error, stdout, stderr) {
-        console.log('stdout: ' + stdout)
-        console.log('stderr: ' + stderr)
+var init = true;
+//createMasterWork();
 
-        if (error !== null) {
-          console.log('exec error: ' + error);
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+
+
+//Set Middlewares
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{[{{{{}}}}]}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+
+//Set Cors
+app.use(function (req, res, next) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,GET');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  
+  next();
+});
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+
+//Functions and Utils
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+
+async function saveFile(file){
+  return fileDao.saveEntity(file);
+}
+
+async function createFileData(req){
+  let path = req.file.path;
+  var f = fs.readFileSync(path,"utf8");
+  console.log(req.file.originalname);
+  let file = new FileEntity(req.file.originalname,req.file.mimetype,req.file.size,req.file.path,req.rawHeaders[9],req.file.filename,req.connection.remoteAddress,req.headers.host,f,new Date())
+
+  await saveFile(file);
+  console.log("The file has been saved in database");
+  await createJob(file);
+  contFinishUploades+=1;
+  //console.log(contFinishUploades)
+}
+
+function verifyKeys(){
+  let repetidos = [];
+  for(let k of jobNames){
+    let cont = 0;
+    for(let j of jobNames){
+      if(k == j){
+        cont+=1;
+        if(cont > 1){
+          console.log(k+" é repetida");
+          repetidos.push(k);
         }
-    });
+      }
+    }
+  }
+  return repetidos;
 
-    }); 
-
-    
-    //let filesList = await fileDao.getAllFiles();
-   // console.log("Files --> ",filesList);
-    
 }
+
+function randomNumber(low, high) {
+  //console.log("randomNumber")
+  return Math.random() * (high - low) + low;
+}
+
+async function createJob(file){
+    
+  let sleep = randomNumber(10,50);
+  sleep = sleep/25;
+  let a = randomInt(1,100);
+  let b = randomInt(1,100);
+  let c = randomInt(1,100);
+  let d = randomInt(1,100); 
+  let appendKey = randomNumber(a,b)*1000*randomNumber(c,d);
+  let aK = "hash-"+appendKey;
+  await resolveAfterXSeconds(sleep);
+
+  let key = 'job-'+Date.now()+'-'+aK;
+  jobNames.push(key);
+  let value = 
+  {
+    fileName:file.fileName,
+    originalname:file.originalName,
+    state:stateEnum.WAITING
+
+  }
+  console.log(JSON.stringify(value));
+  return redisClient.set(key,JSON.stringify(value),function(err,rep){
+    contFinishRedis += 1;
+    console.log(key+' is now on the Redis server.Redis response:'+rep);
+  });  
+  
+}
+
+function randomInt(low, high) {
+  return Math.floor(Math.random() * (high - low) + low)
+}
+
+
+
+function createWork(){
+  console.log("criando workers");
+  port = randomInt(4000,5000);
+  h = host
+  w = JSON.stringify(nodes);
+
+  cmd = "node worker.js "+h+" "+port+" "+myHost+" '"+w+"'";
+  cmds.push(cmd);
+  createdNode = true;
+  nodes.push("http://"+h+":"+port+"/");
+  console.log(cmd)
+  child = cmdExecutor(cmd, function (error, stdout, stderr) {
+    console.log(stderr);
+    console.log(error); 
+  });
+  
+  
+
+}
+
+function resolveAfterXSeconds(x) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(x);
+    }, x * 1000);
+  });
+}
+
+let storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, DIR);
+    },
+    filename: (req, file, cb) => {
+      cb(null, file.originalname + '-' + Date.now() + '.' + path.extname(file.originalname));
+    }
+});
+
+let upload = multer({storage: storage});
+
+
+function sendMessage(URL,origin){
+
+  request.get(URL,async function(error,res,body){
+    
+    try {
+      let data = JSON.parse(res.body);
+      
+      dataNodes.set(origin,data);     
+    
+    } catch (error) {
+      if(iHaveWorkers){
+        console.log("removendo "+origin);
+        dataNodes.delete(origin);
+        nodes.splice(nodes.indexOf(origin));
+        if(nodes.length==0){
+          dataNodes = new Map();
+          iHaveWorkers = false;
+        }
+      }
+    }     
+  })
+  
+}
+
+function sendBroadcast(endPoint){
+  for(let n of nodes){
+      let URL = n+endPoint;
+      sendMessage(URL,n);
+  }
+}
+
+//Endpoints
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+
+
+app.get('/getDataWorkers',function(req,res){
+  console.log("Getworkers is requested");
+  console.log(nodes);
+  //res.send(nodes);
+  sendBroadcast('getData')
+  if(nodes.length == 0){
+    dataNodes = new Map();
+    
+  }
+  let reqFaltante = allRequest.size - doneFIles.size;
+  if(nodes.length == 0 && reqFaltante > 0){
+    withoutWorkers +=1;
+  }
+  console.log(nodes.length, reqFaltante)
+  if(withoutWorkers > 15 && reqFaltante > 0){
+    verifyWorkers();
+    withoutWorkers = 0;
+  }
+  let d = {nodes:nodes,data:Array.from(dataNodes.entries())};
+  d = JSON.stringify(d);
+  res.end(d);
+});
+
+app.post('/done', function (req, res) {
+  console.log(req.body.data);
+
+  let data = JSON.parse(req.body.data);
+  if(nodes.indexOf(data.origin)==-1){
+    console.log(data.origin);
+    nodes.push(data.origin);
+  }
+  console.log(data.value.key,data.value.value)
+  doneFIles.set(data.value.key,data.value.value);
+  console.log(doneFIles);
+  let r = JSON.stringify({msg:DEFINED_MSGS.OK});
+  res.end(r);
+});
+
+app.post('verifyKeys',function(req,res){
+  let r = verifyKeys();
+
+  res.send(JSON.stringify(r));
+
+});
+
+app.post('/getMyconvertedFile',function(req,res){
+  let key = JSON.parse(req.body.key);
+  //if(contFinishUploades == allRequest.size){
+   // verifyWorkers();
+    //contFinishUploades = 0;
+  //}
+  if(doneFIles.has(key)){
+    res.end(JSON.stringify({msg:DEFINED_MSGS.OK}));
+  }else{
+    res.end(JSON.stringify({msg:DEFINED_MSGS.NO}));
+  }
+});
+
+app.get('/endUpload',async function(req,res){
+    //verifyKeys();
+    console.log("endUplaoa");
+    verifyWorkers();
+    res.status(200).end(JSON.stringify({msg:DEFINED_MSGS.OK}));  
+});
+
+app.get('/download/:key',function(req,res){
+  let key = req.params.key;
+  console.log(key);
+  if(doneFIles.has(key)){
+    //allRequest.delete(key);
+    contFinishUploades -=1;
+    if(  contFinishUploades < 0 )   contFinishUploades = 0;
+    let path = doneFIles.get(key);
+    res.download(path);
+  }else{
+    res.end(JSON.stringify({msg:DEFINED_MSGS.NO}));
+  }
+});
+
+
+app.post('/api/upload',upload.single('file'), function (req, res) {
+    console.log("api upload");
+    if (!req.file) {
+        console.log("No file received");
+        return res.send({
+          success: false,
+        });
+      } else { 
+        createFileData(req); 
+       
+        allRequest.set(req.file.filename,true);
+         
+        
+        return res.send({
+          success: true,
+          fileName:req.file.filename,
+        })
+      }
+});
+
+
+async function verifyWorkers(){
+  console.log("VerifyWorkers");
+  let maxNodes = 15;
+  let reqFaltante = allRequest.size - doneFIles.size;
+
+  need = parseInt(''+reqFaltante/cargaTrabalho);
  
-//app();
-app2();
+  if (need==0) need =1;
+
+  if(need > nodes.length && nodes.length < maxNodes){ 
+    need =  need - nodes.length;
+
+    console.log("Criando");
+    if(need > maxNodes) need  = maxNodes;
+   
+    console.log("Criando Workers "+need); 
+    for(let i = 0;i < need; i++){
+      await resolveAfterXSeconds(0.5);
+      console.log("Criando Workers "+i);
+      if(nodes.length < maxNodes){      
+      createWork();  
+      } 
+    }
+    await resolveAfterXSeconds(3);
+    iHaveWorkers = true;
+
+  }
+  
+
+}
+
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+cmdExecutor('node redisCleaner.js cls');
+
+//Start Server
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+app.listen(PORT, function () {
+  console.log('Node.js server is running on port ' + PORT);
+});
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}

@@ -6,7 +6,7 @@ import { throwIfEmpty } from 'rxjs/operators';
 
 const serverURL = 'http://35.188.196.4:4000/';
 const URL = serverURL + 'api/upload';
-const donwloadURL = serverURL + 'download/';
+
 
 
 @Component({
@@ -29,13 +29,12 @@ export class AppComponent implements OnInit {
   noResponse = true;
 
   onceTime = false;
+  oldQueueLenght = 0;
   // tslint:disable-next-line: no-shadowed-variable
   constructor(private ConvertService: ConvertService) { }
 
 
   public uploader: FileUploader;
-
-
   public hasBaseDropZoneOver = false;
   public hasAnotherDropZoneOver = false;
 
@@ -46,6 +45,8 @@ export class AppComponent implements OnInit {
   public fileOverAnother(e: any): void {
     this.hasAnotherDropZoneOver = e;
   }
+  donwloadURL = this.ConvertService.serverUrlDownload;
+
   ngOnInit() {
 
     this.initUploader() ;
@@ -54,7 +55,7 @@ export class AppComponent implements OnInit {
   initUploader() {
     this.uploader = new FileUploader(
       {
-        url: URL,
+        url: this.ConvertService.serverUrlUpload,
         disableMultipart: false,
         autoUpload: false,
         method: 'post',
@@ -77,28 +78,26 @@ export class AppComponent implements OnInit {
 
         if ( this.uploader.progress == 100) {
           await this.resolveAfterXSeconds(2);
-         
           if(!this.onceTime){
             this.getFilesConverted();
             this.getStatusNetwork();
-           // this.endUpload();
+            this.endUpload();
             this.onceTime = true;
-          }
-          await this.resolveAfterXSeconds(10);        
-          this.initUploader();
+            await this.resolveAfterXSeconds( this.oldQueueLenght/5);
+            this.initUploader();
+          }    
         }
       };
 
   }
   async getFilesConverted(){
-    await this.resolveAfterXSeconds(1);
+    await this.resolveAfterXSeconds(5);
     while(this.noResponse){ 
       this.noResponse = false;
       for(let n of  this.nameFiles){
         this.getMyConverted(n.fn, n.on);
-        console.log(this.nameFiles);
       }
-      await this.resolveAfterXSeconds(5);
+      await this.resolveAfterXSeconds(2);
     }
   }
 
@@ -124,9 +123,12 @@ export class AppComponent implements OnInit {
     }
   }
   async onConverterClick() {
-    this.uploader.uploadAll();
+    this.noResponse = true;
+    this.onceTime = false;
     this.downloadLinks = [];
     this.nameFiles = [];
+    this.uploader.uploadAll();
+    this.oldQueueLenght = this.uploader.queue.length;
     while (this.uploader.progress != 100) { await this.resolveAfterXSeconds(5); }
     for (const i of this.uploader.queue) {
       const oName = i.file.name;
@@ -201,6 +203,7 @@ export class AppComponent implements OnInit {
   }
 
   downloadFile(link) {
+    console.log(link);
     window.open(link);
   }
 
@@ -215,9 +218,10 @@ export class AppComponent implements OnInit {
         if (d.msg == 'OK') {
           for (const i in this.downloadLinks) {
             if (this.downloadLinks[i].name == oName) {
-              this.downloadLinks[i].link = donwloadURL + fileName;
+              this.downloadLinks[i].link = this.donwloadURL + fileName;
             }
           }
+         
         }else{
           this.noResponse = true;
         }

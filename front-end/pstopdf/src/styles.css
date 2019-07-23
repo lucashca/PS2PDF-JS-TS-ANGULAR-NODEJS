@@ -1,11 +1,14 @@
 body {
+    
     font-size: 28px;
     background-image: url("assets/imagens/background.jpg");
     background-color: #cccccc;
+    color: #1c8adb;
   }
 
   ul {
     list-style-type: none;
+    height: 40px;;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -33,11 +36,14 @@ body {
   
 
  .header{
-        margin-top: -35px;
-        padding: 20px;
-        background-color:rgba(105, 136, 194, 0.596);
+
+        margin-top: 0px;
+        padding:40px;
+        padding-left: 10%;
         height: 200px;
-    } 
+        background-image: radial-gradient(circle,#0f6fb3, #1c8adb);
+        color: #ffffff;
+  } 
 
   .active {
     background-color: #4CAF50;
@@ -72,12 +78,13 @@ body {
 }
 
 
+
 .nodesBox{
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   grid-column-gap: 10px;
   grid-row-gap: 10px;
-  width: 80%;
+  width: 100%;
   min-height: 400px;
   margin: 10px auto;
   background: #ffffff;

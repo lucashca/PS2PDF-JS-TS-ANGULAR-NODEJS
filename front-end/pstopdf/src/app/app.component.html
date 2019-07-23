@@ -21,11 +21,8 @@
         <button class="delete-file" (click)="item.remove()">
             <img [src]="item.isSuccess ? 'assets/imagens/ok.png':'assets/imagens/Recycle_Bin_Full.png'" alt="image">
         </button>
-
-
     </div>
 
-    
     <div class="converter-box">
         <input type="button" class="converter-btn" (click)="onConverterClick()" [disabled]="!uploader.getNotUploadedItems().length" value="Convert">
     </div>
@@ -43,20 +40,20 @@
            
        
     </div>
-
-    <h3>Converted files</h3>
-    <div (click)="downloadFile(item.link)" class="files-list" *ngFor="let item of downloadLinks">
+    <h3 *ngIf="downloadLinks.length > 0">Converted files</h3>
+    <div (click)="downloadFile(item.link)" class="files-list" *ngFor="let item of downloadLinks;let i = index">
         <div class="progress filtro2" >
             <div  [ngClass]="{'bg-success': item.link,'bg-danger': !item.link,'progress-bar-animated': !item.link || item.link}" class="progress-bar progress-bar-striped "  role="progressbar" style="width: 100%;"></div>
         </div>
-        <p> {{ item.name }} </p>
+        <p> {{i}} - {{ item.name }} </p>
         <button [disabled]="!item.link" class="delete-file" >
             <img [src]="'assets/imagens/download.png'" alt="image">
         </button>     
     </div>
-   
-    <div class="nodesBox" *ngIf="dataWorkers">
 
+    <h3>Active nodes in the backend server</h3>
+    <div class="nodesBox" *ngIf="dataWorkers">
+ 
         <div class="nodesData" *ngFor="let item of dataWorkers.data; let i = index">
             
                 <table class="table-data" *ngIf="dataWorkers.data[i][1]">

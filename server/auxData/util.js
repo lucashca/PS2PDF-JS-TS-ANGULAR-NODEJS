@@ -14,6 +14,5 @@ function dateToMySQLFormat(date) {
     if (day.length == 1) {
         day = "0" + day;
     }
-   
     return year + "-" + month + "-" + day+"T"+hours+":"+min+":"+seconds+"."+milli+"Z";
 }

@@ -11,6 +11,10 @@ const stateEnum = {
 
 allKeys = [];
 contador = 0;
+contDel = 0;
+
+var allProgrees = [];
+
 async function getAllKeys(callback){
     redisClient.keys('*',function (err, keys) {
         if (err){
@@ -39,8 +43,10 @@ async function getValue(key,callback){
 }
 
 async function cleanCache(keys){
+    let i = 0;
     for(let k of keys){
-        console.log("deletando",k);
+        i +=1;
+        console.log("deletando"+k+" i "+i);
         redisClient.del(k);
     }
 }
@@ -59,6 +65,8 @@ function callbackGetAllKeys(key){
 
 function callbackCleanCache(res){
     contador +=1;
+    console.log(contador);
+    console.log(allKeys.length);
     if(contador == allKeys.length){
         process.exit(0);
     }
@@ -88,12 +96,17 @@ function filterAllKeys(){
 }
 function filterAllData(){
     let auxData = [];
+    let progressData = [];
     for(let d of allData){
         d.value = JSON.parse(d.value);
         if (d.value.state == stateEnum.WAITING){
             auxData.push(d);
         }
+        if(d.value.state == stateEnum.IN_PROGRESS){
+            progressData.push(d);
+        }
     }
+    allProgrees = progressData;
     jobs = auxData;
 }
 
@@ -118,11 +131,18 @@ async function init(){
     getAllValues();
     
     while(allData.length == 0) await resolveAfterXSeconds(1);
+    console.log("Jobs in the pile");
     console.log(allData);
     filterAllData();
     console.log("Jobs to be done");
     console.log(jobs);
-  
+    console.log("Jobs in progress")
+    console.log(allProgrees);
+    console.log("Total Jobs to be done "+jobs.length);
+    console.log("Total Jobs"+allData.length);
+    console.log("Total Jobs in progress"+allProgrees.length);
+    
+    
     
 }
 

@@ -13,6 +13,8 @@ const fileDao = new FileDao();
 const weightOfWorker = 3;
 const app = express();
 
+var desableConsole = true;
+
 
 var dir_tempConvertedPS = './temp/converted/ps/';
 var dir_tempConvertedPDF = './temp/converted/pdf/';
@@ -33,6 +35,8 @@ var job;
 
 var receivedMsg = '';
 var seendMsg = '';
+
+var starving = 0;
 
 PORT:Number;
 HOST:String;
@@ -178,9 +182,13 @@ function setup(){
     //***********************************************************
     app.listen(PORT, function () {
         console.log('Node.js server is running on port ' + PORT);
+        if(desableConsole == true);
+        console.log = function(){};
+
     });
     //***********************************************************
-}
+   
+}   
 
 async function init(){
     console.log("init")
@@ -232,8 +240,7 @@ async function init(){
         blockedFiles.push(job.key);
         data = createDataMsg(DEFINED_MSGS.BLOCK,job.key);
         if(workersNodes.length > 0){
-            let sleep = randomNumber(0,2);
-            await resolveAfterXSeconds(sleep);
+            
             sendBroadcast(data,DEFINED_ENDPOINTS.BLOCK,callbackBlockJob);
         } else{
             startJob();
@@ -254,7 +261,7 @@ async function init(){
 }
 
 
-function callbackBlockJob(err,res,body){
+async function callbackBlockJob(err,res,body){
     console.log("callbackBlockJob")
     if(err){
 
@@ -262,7 +269,7 @@ function callbackBlockJob(err,res,body){
         let data = JSON.parse(res.body);
         console.log(data.msg);
         broadcastResponse.push(data);
-        receivedMsg = {msg:data.msg,address:data.origin};    
+        
         if(broadcastResponse.length == workersNodes.length){
             let canConvert = true;
             for(let r of broadcastResponse){
@@ -272,10 +279,21 @@ function callbackBlockJob(err,res,body){
                 }
             }
             if(canConvert){
+                receivedMsg = {msg:"Yes you can do this job!",address:data.origin};
+                let sleep = randomNumber(1,5);
+                await resolveAfterXSeconds(sleep);    
                 startJob();
             }else{
-                blockedFiles.splice(blockedFiles.indexOf(job));
+                receivedMsg = {msg:"No you can't do this job! "+job.key,address:data.origin};    
+                blockedFiles.splice(blockedFiles.indexOf(job.key));
                 job = undefined;
+                starving +=1;
+                if(starving == 5){
+                    console.log("I am a starving worker");
+                    process.exit(0);
+                }
+                let sleep = randomNumber(5,10);
+                await resolveAfterXSeconds(sleep);
                 init();
             }
         }
@@ -286,11 +304,19 @@ function callbackSendToServer(err,res,body){
     console.log("callbackSendToServer")
     if(err){
         console.log(err);
+        let key = job.value.fileName;
+        let value = dir_tempConvertedPDF+""+job.value.originalname +""+appendFileName+".PDF";
+        let pair = {key:key,value:value};
+        let data = createDataMsg(DEFINED_MSGS.DONE,pair);   
+        let URL = this.MAINSERVER+DEFINED_ENDPOINTS.DONE;
+        sendMessage(URL,data,callbackSendToServer);
+        
     }else{
         msg = JSON.parse(body);
         console.log(res.request.originalHost);
         console.log("Received form "+res.request.originalHost+":  message "+msg.msg);
         receivedMsg = {msg:msg.msg,address:msg.origin};
+        job = undefined;
         init();
     }
 }
@@ -420,7 +446,7 @@ function sendBroadcast(data,endPoint,callback){
 function sendMessage(URL,DATA,callback){
     console.log("Request for "+URL+" with "+JSON.stringify(DATA));
     seendMsg = {msg:DATA.msg,address:URL};
-    request.post({url:URL, form:{data:JSON.stringify(DATA)},timeout: 3000},callback)
+    request.post({url:URL, form:{data:JSON.stringify(DATA)},timeout: 6000},callback)
     
 }
 
