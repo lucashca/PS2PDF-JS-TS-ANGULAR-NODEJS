@@ -9,24 +9,54 @@ import { timeout, map } from 'rxjs/operators';
 export class ConvertService {
 
   headers = new HttpHeaders({
-    'Content-Type': 'application/json'
+    'Access-Control-Allow-Origin': '*',
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
   });
+
   options = { headers: this.headers };
  
 
-  serverUrl = "http://localhost:3000/";
-
-  constructor(private http: HttpClient) { }
+  serverUrl = 'http://localhost:4000/';
 
 
-  convertFilePS(file){
+constructor(private http: HttpClient) { }
+
+
+convertFilePS(file){
     const URL = this.serverUrl+'convertFilePS/';
     console.log(file);
     return this.http.post(URL,{file:file},);
   }
 
+  endUpload(){
+  const URL = this.serverUrl+'endUpload/';
+  console.log("endUpload");
+  return this.http.get(URL);
+}
 
-  convertFilePDF(file){
+getMyDownload(fileName){
+  const URL = this.serverUrl + 'download/' + fileName;
+  console.log("My download"+URL);
+  window.open(URL);
+}
+
+getDataWorkers(){
+  const URL = this.serverUrl + 'getDataWorkers/';
+  return this.http.get(URL);
+}
+
+getNodesInfo(){
+  const URL = this.serverUrl + 'getNodes/';
+  return this.http.post(URL,{});
+}
+
+getMyConverted(fileName){
+    const URL = this.serverUrl+'getMyconvertedFile/';
+    return this.http.post(URL,{key:fileName}).pipe(timeout(1000));
+  }
+
+convertFilePDF(file){
     const URL = this.serverUrl+'convertFilePDF/';
     console.log(file);
     return this.http.post(URL,{file:file});

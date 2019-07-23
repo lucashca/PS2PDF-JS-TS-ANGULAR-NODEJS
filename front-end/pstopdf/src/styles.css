@@ -71,6 +71,56 @@ body {
     opacity: 0.8;
 }
 
+
+.nodesBox{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-column-gap: 10px;
+  grid-row-gap: 10px;
+  width: 80%;
+  min-height: 400px;
+  margin: 10px auto;
+  background: #ffffff;
+  border: 1px dashed;
+  border-radius: 12px;
+  padding: 10px;
+  color: #1c8adb;
+}
+.nodesData{
+ width: 30%; 
+ margin:2px;
+ padding: 10px;
+
+ font-size: 16px;
+}
+
+.nodesData {
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.nodesData td, .nodesData th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.nodesData tr:nth-child(even){background-color: #f2f2f2;}
+
+.nodesData tr:hover {background-color: #ddd;}
+
+.nodesData th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #4CAF50;
+  color: white;
+}
+
+.table-data{
+  text-align: center;
+  border: 1px solid #111;
+}
 .filtro {
  
   width: 48%;
@@ -88,6 +138,21 @@ body {
   opacity: 0.4;
 }
 
+.filtro2 {
+ 
+  width: 56%;
+  height: 65px;
+  background: #ffffff;
+  border: 1px dashed;
+  border-radius: 12px;
+  cursor: pointer;
+  
+  margin: -10px;
+ 
+  position: absolute;
+  
+  opacity: 0.4;
+}
 .files-list {
   
     display: flex;

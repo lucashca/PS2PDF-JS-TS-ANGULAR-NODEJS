@@ -1,0 +1,9 @@
+cd Documents/Code/SD/pstopdf/server
+
+node worker.js localhost 4649 localhost:4000 '[]'
+node worker.js localhost 4305 localhost:4000 '["http://localhost:4649/"]'
+node worker.js localhost 4365 localhost:4000 '["http://localhost:4649/","http://localhost:4305/"]'
+node worker.js localhost 4459 localhost:4000 '["http://localhost:4649/","http://localhost:4305/","http://localhost:4365/"]'
+node worker.js localhost 4696 localhost:4000 '["http://localhost:4649/","http://localhost:4305/","http://localhost:4365/","http://localhost:4459/"]'
+node worker.js localhost 4925 localhost:4000 '["http://localhost:4649/","http://localhost:4305/","http://localhost:4365/","http://localhost:4459/","http://localhost:4696/"]'
+node worker.js localhost 4935 localhost:4000 '["http://localhost:4649/","http://localhost:4305/","http://localhost:4365/","http://localhost:4459/","http://localhost:4696/","http://localhost:4925/"]'

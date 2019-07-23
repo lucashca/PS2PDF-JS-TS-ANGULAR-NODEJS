@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ConvertService } from './services/convert.service';
-import {  FileUploader, FileSelectDirective } from 'ng2-file-upload/ng2-file-upload';
+import { FileUploader, FileSelectDirective } from 'ng2-file-upload/ng2-file-upload';
+import { throwIfEmpty } from 'rxjs/operators';
 
 
 const URL = 'http://localhost:4000/api/upload';
+
+const donwloadURL = 'http://localhost:4000/download/';
 
 
 @Component({
@@ -14,24 +17,23 @@ const URL = 'http://localhost:4000/api/upload';
 export class AppComponent implements OnInit {
   title = 'pstopdf';
   files: any = [];
+  dataWorkers: any = [];
+
+  downloadLinks = [];
+  nameFiles = [];
   aceptableTypes = [
     'application/pdf',
     'application/ps'
   ];
 
-// tslint:disable-next-line: no-shadowed-variable
-  constructor(private ConvertService: ConvertService) {}
+  noResponse = true;
+
+  onceTime = false;
+  // tslint:disable-next-line: no-shadowed-variable
+  constructor(private ConvertService: ConvertService) { }
 
 
-  public uploader: FileUploader = new FileUploader(
-    {
-      url: URL,
-      disableMultipart : false,
-      autoUpload: false,
-      method: 'post',
-      itemAlias: 'file',
-      allowedMimeType: ['application/pdf','application/postscript']
-    });
+  public uploader: FileUploader;
 
 
   public hasBaseDropZoneOver = false;
@@ -45,22 +47,97 @@ export class AppComponent implements OnInit {
     this.hasAnotherDropZoneOver = e;
   }
   ngOnInit() {
-    this.uploader.onAfterAddingFile = (file) => { file.withCredentials = false;
 
-    };
-    this.uploader.onCompleteItem = (item: any, response: any, status: any, headers: any) => {
-         console.log('ImageUpload:uploaded:', item, status, response);
+    this.initUploader() ;
+  }
 
-    };
+  initUploader() {
+    this.uploader = new FileUploader(
+      {
+        url: URL,
+        disableMultipart: false,
+        autoUpload: false,
+        method: 'post',
+        itemAlias: 'file',
+        allowedMimeType: ['application/pdf', 'application/postscript']
+      });
+
+      // tslint:disable-next-line: align
+      this.uploader.onAfterAddingFile = (file) => {
+        file.withCredentials = false;
+
+      };
+    this.uploader.onCompleteItem = async (item: any, response: any, status: any, headers: any) => {
+        await this.resolveAfterXSeconds(5);
+        console.log(response);
+        const data = JSON.parse(response);
+        console.log('Respos');
+        console.log(item.file.name);
+        this.nameFiles.push({fn: data.fileName, on:item.file.name});
+
+        if ( this.uploader.progress == 100) {
+          await this.resolveAfterXSeconds(2);
+         
+          if(!this.onceTime){
+            this.getFilesConverted();
+            this.getStatusNetwork();
+            this.endUpload();
+            this.onceTime = true;
+          }
+          await this.resolveAfterXSeconds(10);        
+          this.initUploader();
+        }
+      };
+
+  }
+  async getFilesConverted(){
+    await this.resolveAfterXSeconds(1);
+    while(this.noResponse){ 
+      this.noResponse = false;
+      for(let n of  this.nameFiles){
+        this.getMyConverted(n.fn, n.on);
+        console.log(this.nameFiles);
+      }
+      await this.resolveAfterXSeconds(5);
+    }
+  }
+
+  getDataWorkers() {
+    return this.ConvertService.getDataWorkers().subscribe(
+      (data) => {
+        this.dataWorkers = data;
+        console.log('daat' + data);
+      }, err => {
+
+      },
+      () => {
+
+      });
+  }
 
 
- }
+  async getStatusNetwork() {
+    await this.resolveAfterXSeconds(5);
+    while (true) {
+      this.getDataWorkers();
+      await this.resolveAfterXSeconds(2);
+    }
+  }
+  async onConverterClick() {
+    this.uploader.uploadAll();
+    this.downloadLinks = [];
+    this.nameFiles = [];
+    while (this.uploader.progress != 100) { await this.resolveAfterXSeconds(5); }
+    for (const i of this.uploader.queue) {
+      const oName = i.file.name;
+      const down = { name: oName, link: null };
+      this.downloadLinks.push(down);
+    }
 
-
-
+  }
   uploadFile(event) {
 
-// tslint:disable-next-line: prefer-for-of
+    // tslint:disable-next-line: prefer-for-of
     for (let index = 0; index < event.length; index++) {
       const element = event[index];
       if (this.aceptableTypes.indexOf(element.type) > -1) {
@@ -75,6 +152,13 @@ export class AppComponent implements OnInit {
     this.files.splice(index, 1);
   }
 
+  resolveAfterXSeconds(x) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(x);
+      }, x * 1000);
+    });
+  }
 
   sendFilesToConvert() {
 
@@ -105,15 +189,59 @@ export class AppComponent implements OnInit {
     console.log('ConvertFilePS');
     return this.ConvertService.convertFilePS(file).subscribe(
       (data) => {
+        console.log(data);
+      },
+      err => {
 
-    },
-    err => {
+      },
+      () => {
 
-    },
-    () => {
-
-    }
+      }
     );
+  }
+
+  downloadFile(link) {
+    window.open(link);
+  }
+
+  getMyConverted(fileName, oName) {
+    console.log(fileName);
+    const key = JSON.stringify(fileName);
+    return this.ConvertService.getMyConverted(key).subscribe(
+      (data) => {
+        let d: any;
+        d = data;
+        console.log(data);
+        if (d.msg == 'OK') {
+          for (const i in this.downloadLinks) {
+            if (this.downloadLinks[i].name == oName) {
+              this.downloadLinks[i].link = donwloadURL + fileName;
+            }
+          }
+        }else{
+          this.noResponse = true;
+        }
+      },
+      err => {
+
+      },
+      () => {
+
+      });
+  }
+  
+  endUpload() {
+   
+    return this.ConvertService.endUpload().subscribe(
+      (data) => {
+       
+      },
+      err => {
+
+      },
+      () => {
+
+      });
   }
 
   convertFilePDF(file) {
@@ -121,13 +249,13 @@ export class AppComponent implements OnInit {
     return this.ConvertService.convertFilePDF(file).subscribe(
       (data) => {
 
-    },
-    err => {
+      },
+      err => {
 
-    },
-    () => {
+      },
+      () => {
 
-    }
+      }
     );
   }
 

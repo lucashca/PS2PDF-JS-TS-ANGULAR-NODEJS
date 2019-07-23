@@ -1,10 +1,8 @@
 
 <div class="mycontainer">
 
-
     <h3>Please select the files you want to convert!</h3>
 
-  
     <div ng2FileDrop
         [ngClass]="{'nv-file-over': hasBaseDropZoneOver}"
         (fileOver)="fileOverBase($event)"
@@ -29,7 +27,7 @@
 
     
     <div class="converter-box">
-        <input type="button" class="converter-btn" (click)="uploader.uploadAll()" [disabled]="!uploader.getNotUploadedItems().length" value="Convert">
+        <input type="button" class="converter-btn" (click)="onConverterClick()" [disabled]="!uploader.getNotUploadedItems().length" value="Convert">
     </div>
 
 
@@ -45,15 +43,59 @@
            
        
     </div>
+
+    <h3>Converted files</h3>
+    <div (click)="downloadFile(item.link)" class="files-list" *ngFor="let item of downloadLinks">
+        <div class="progress filtro2" >
+            <div  [ngClass]="{'bg-success': item.link,'bg-danger': !item.link,'progress-bar-animated': !item.link || item.link}" class="progress-bar progress-bar-striped "  role="progressbar" style="width: 100%;"></div>
+        </div>
+        <p> {{ item.name }} </p>
+        <button [disabled]="!item.link" class="delete-file" >
+            <img [src]="'assets/imagens/download.png'" alt="image">
+        </button>     
+    </div>
    
+    <div class="nodesBox" *ngIf="dataWorkers">
+
+        <div class="nodesData" *ngFor="let item of dataWorkers.data; let i = index">
+            
+                <table class="table-data" *ngIf="dataWorkers.data[i][1]">
+                        <tr><td>Node</td><td ><a href="{{dataWorkers.data[i][0] }}">{{ dataWorkers.data[i][0] }}</a></td> </tr>
+                        <tr><td>Current Job</td><td *ngIf="dataWorkers.data[i][1].currentJob">{{ dataWorkers.data[i][1].currentJob.value.originalname}}</td>
+                            <td *ngIf="!dataWorkers.data[i][1].currentJob">None</td> </tr>
+                        <tr><td colspan="2">Blocked files</td></tr>
+                        <tr >
+                            <td colspan="2">
+                                    <select class="custom-select">
+                                        <option *ngFor="let b of dataWorkers.data[i][1].blockedFiles" value="1">{{b}}</option>
+                                    </select> 
+                            </td>
+                        </tr>
+                        <tr><td colspan="2">Jobs Pile</td></tr>
+                        <tr><td colspan="2">
+                                <select class="custom-select">
+                                    <option *ngFor="let b of dataWorkers.data[i][1].jobsPile" value="1">{{b.key}}</option>
+                                </select> 
+                        </td></tr>
+                        <tr><td colspan="2">Live nodes</td></tr>
+                        <tr ><td colspan="2">
+                                <select class="custom-select">
+                                    <option *ngFor="let b of dataWorkers.data[i][1].liveNodes" value="1">{{b}}</option>
+                                </select> 
+                        </td></tr>
+                        <tr><td>Current State</td><td>{{ dataWorkers.data[i][1].currentState}}</td> </tr>
+                        <tr><td>Send Msg</td><td>{{ dataWorkers.data[i][1].sendMsg.msg}}</td> </tr>
+                        <tr><td>Received Msg</td><td>{{ dataWorkers.data[i][1].receivedMsg.msg}}</td> </tr>
+                    </table>
+                  
+        
+            
+        </div>
+    </div>
+   
+    
 
      
-
-  <h3>Sticky Navigation Bar Example</h3>
-  <p>The navbar will <strong>stick</strong> to the top when you reach its scroll position.</p>
-  <p><strong>Note:</strong> Internet Explorer, Edge 15 and earlier versions do not support sticky positioning. Safari requires a -webkit- prefix.</p>
-  <p>Some text to enable scrolling.. Lorem ipsum dolor sit amet, illum definitiones no quo, maluisset concludaturque et eum, altera fabulas ut quo. Atqui causae gloriatur ius te, id agam omnis evertitur eum. Affert laboramus repudiandae nec et. Inciderint efficiantur his ad. Eum no molestiae voluptatibus.</p>
-  
  
   </div>
 
