@@ -90,10 +90,13 @@ export class AppComponent implements OnInit {
     await this.resolveAfterXSeconds(5);
     while(this.noResponse){ 
       this.noResponse = false;
-      for(let n of  this.nameFiles){
-        this.getMyConverted(n.fn, n.on);
+      for(let i in  this.nameFiles){
+        if(this.nameFiles[i]!=0){
+          this.getMyConverted(i);
+          await this.resolveAfterXSeconds(0.2);          
+        }
       }
-      await this.resolveAfterXSeconds(2);
+      await this.resolveAfterXSeconds(5);
     }
   }
 
@@ -203,9 +206,9 @@ export class AppComponent implements OnInit {
     window.location.assign(link);
   }
 
-  getMyConverted(fileName, oName) {
-    console.log(fileName);
-    const key = JSON.stringify(fileName);
+  getMyConverted(k) {
+    console.log(this.nameFiles[k].fn);
+    const key = JSON.stringify(this.nameFiles[k].fn);
     return this.ConvertService.getMyConverted(key).subscribe(
       (data) => {
         let d: any;
@@ -213,17 +216,20 @@ export class AppComponent implements OnInit {
         console.log(data);
         if (d.msg == 'OK') {
           for (const i in this.downloadLinks) {
-            if (this.downloadLinks[i].name == oName) {
-              this.downloadLinks[i].link = this.donwloadURL + fileName;
+            if (this.downloadLinks[i].name == this.nameFiles[k].on) {
+              this.downloadLinks[i].link = this.donwloadURL + this.nameFiles[k].fn;
+              this.nameFiles[i] = 0;
+              break;
             }
           }
-         
+          
+     
         }else{
           this.noResponse = true;
         }
       },
       err => {
-
+        this.noResponse = true;
       },
       () => {
 

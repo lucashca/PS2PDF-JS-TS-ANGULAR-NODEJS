@@ -33,6 +33,8 @@ var napTime = 5;
 var blockedFiles = [];
 var job;
 
+kill = false;
+
 var receivedMsg = '';
 var seendMsg = '';
 
@@ -72,6 +74,12 @@ const stateEnum = {
     NAP:'Taking a nap'    
 }
 
+
+function goOn(){
+    if(kill){
+        process.exit(0);
+    }
+}
 
 var myState = stateEnum.WAITING;
 
@@ -115,6 +123,17 @@ app.get('/getData',function(req,res){
     res.send(receivedMsg);
     res.send(seendMsg);
     */
+});
+
+app.get('/kill',function(req,res){
+   res.send(JSON.stringify({msg:DEFINED_MSGS.OK}));
+   if(job == undefined){
+       process.exit(0);
+   }else{
+       changeJobStatus(stateEnum.WAITING);
+   }
+
+   kill = true;
 });
 
 app.post('/setIAmLive', function (req, res) {
@@ -427,6 +446,7 @@ function changeJobStatus(status){
     let j = job;
     j.value.state = status;
     redisClient.SET(j.key,JSON.stringify(j.value));
+    goOn();
 }
 
 

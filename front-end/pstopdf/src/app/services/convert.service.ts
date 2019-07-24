@@ -54,7 +54,7 @@ getNodesInfo(){
 
 getMyConverted(fileName){
     const URL = this.serverUrl+'getMyconvertedFile/';
-    return this.http.post(URL,{key:fileName}).pipe(timeout(1000));
+    return this.http.post(URL,{key:fileName}).pipe(timeout(5000));
   }
 
 convertFilePDF(file){

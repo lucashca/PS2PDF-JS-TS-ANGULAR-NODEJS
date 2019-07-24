@@ -228,6 +228,13 @@ function sendBroadcast(endPoint){
 //Endpoints
 //{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
 
+function killAllNodes(){
+  for(let n of nodes){
+    let url = n+'kill';
+    request.get(url)
+
+  }
+}
 
 app.get('/getDataWorkers',function(req,res){
   console.log("Getworkers is requested");
@@ -243,7 +250,15 @@ app.get('/getDataWorkers',function(req,res){
     withoutWorkers +=1;
   }
   console.log(nodes.length, reqFaltante)
-  if(withoutWorkers > 15 && reqFaltante > 0){
+  if(nodes.length > 0 && reqFaltante == 0){
+    killAllNodes();
+  }
+  if(nodes.length > reqFaltante){
+    let i = randomInt(0,nodes.length-1);
+    url = nodes[i] + 'kill';
+    request.get(url);
+  }
+    if(withoutWorkers > 15 && reqFaltante > 0){
     verifyWorkers();
     withoutWorkers = 0;
   }
