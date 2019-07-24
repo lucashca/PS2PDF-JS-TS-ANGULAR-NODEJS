@@ -232,8 +232,9 @@ function killAllNodes(){
   for(let n of nodes){
     let url = n+'kill';
     console.log("Kill "+n);
-    request.get(url)
-
+    request.get(url,function(e,r,re){
+      console.log("Kiled")
+    });
   }
 }
 
@@ -256,10 +257,11 @@ app.get('/getDataWorkers',function(req,res){
   }
   if(nodes.length > reqFaltante){
     let i = randomInt(0,nodes.length-1);
-    console.log("Kill "+nodes[i]);
+    console.log("Killing "+nodes[i]);
     url = nodes[i] + 'kill';
-    console.log("matando 1");
-    request.get(url);
+    request.get(url,function(e,r,re){
+      console.log("Kiled")
+    });
   }
     if(withoutWorkers > 15 && reqFaltante > 0){
     verifyWorkers();

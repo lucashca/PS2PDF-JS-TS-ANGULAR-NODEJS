@@ -15,8 +15,8 @@ export class ConvertService {
   });
 
   options = { headers: this.headers };
-  //serverUrl = 'http://localhost:4000/';
-  serverUrl = 'http://35.188.196.4:4000/';
+  serverUrl = 'http://localhost:4000/';
+  //serverUrl = 'http://35.188.196.4:4000/';
   serverUrlUpload = this.serverUrl + 'api/upload';
   serverUrlDownload = this.serverUrl + 'download/';
 
