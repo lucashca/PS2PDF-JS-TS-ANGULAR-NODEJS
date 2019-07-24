@@ -200,7 +200,7 @@ export class AppComponent implements OnInit {
 
   downloadFile(link) {
     console.log(link);
-    window.open(link);
+    window.location.assign(link);
   }
 
   getMyConverted(fileName, oName) {
