@@ -231,6 +231,7 @@ function sendBroadcast(endPoint){
 function killAllNodes(){
   for(let n of nodes){
     let url = n+'kill';
+    console.log("Kill "+n);
     request.get(url)
 
   }
@@ -255,7 +256,9 @@ app.get('/getDataWorkers',function(req,res){
   }
   if(nodes.length > reqFaltante){
     let i = randomInt(0,nodes.length-1);
+    console.log("Kill "+nodes[i]);
     url = nodes[i] + 'kill';
+    console.log("matando 1");
     request.get(url);
   }
     if(withoutWorkers > 15 && reqFaltante > 0){
