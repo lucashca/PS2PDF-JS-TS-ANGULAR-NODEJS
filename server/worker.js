@@ -31,7 +31,7 @@ var contNoKeys = 0;
 
 var napTime = 5;
 var blockedFiles = [];
-var job;
+var job = null;
 
 kill = false;
 
@@ -127,11 +127,13 @@ app.get('/getData',function(req,res){
 
 app.get('/kill',function(req,res){
    res.send(JSON.stringify({msg:DEFINED_MSGS.OK}));
-   if(job == undefined){
+   if(job == null){
        process.exit(0);
    }else{
        changeJobStatus(stateEnum.WAITING);
-   }
+       
+    }
+
 
    kill = true;
 });
@@ -217,6 +219,7 @@ function setup(){
 
 async function init(){
     console.log("init")
+    goOn();
     allKeys = [];
     allData = [];
     jobs = [];
@@ -311,7 +314,7 @@ async function callbackBlockJob(err,res,body){
             }else{
                 receivedMsg = {msg:"No you can't do this job! "+job.key,address:data.origin};    
                 blockedFiles.splice(blockedFiles.indexOf(job.key));
-                job = undefined;
+                job = null;
                 starving +=1;
                 if(starving == 5){
                     console.log("I am a starving worker");
@@ -341,7 +344,8 @@ function callbackSendToServer(err,res,body){
         console.log(res.request.originalHost);
         console.log("Received form "+res.request.originalHost+":  message "+msg.msg);
         receivedMsg = {msg:msg.msg,address:msg.origin};
-        job = undefined;
+        job = null;
+        
         init();
     }
 }
@@ -435,6 +439,7 @@ function callbackGetAllKeys(key){
 }
 
 function startJob(){
+    goOn();
     changeJobStatus(stateEnum.IN_PROGRESS);
     convertPS2PDF(job.value.fileName,job.value.originalname);
 }
