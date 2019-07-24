@@ -45,7 +45,7 @@
         <div class="progress filtro2" >
             <div  [ngClass]="{'bg-success': item.link,'bg-danger': !item.link,'progress-bar-animated': !item.link || item.link}" class="progress-bar progress-bar-striped "  role="progressbar" style="width: 100%;"></div>
         </div>
-        <p> {{i}} - {{ item.name }} </p>
+        <p> {{i}} - {{ item.name }}-{{item.link}} </p>
         <button [disabled]="!item.link" class="delete-file" >
             <img [src]="'assets/imagens/download.png'" alt="image">
         </button>     

@@ -4,10 +4,6 @@ import { FileUploader, FileSelectDirective } from 'ng2-file-upload/ng2-file-uplo
 import { throwIfEmpty } from 'rxjs/operators';
 
 
-const serverURL = 'http://35.188.196.4:4000/';
-const URL = serverURL + 'api/upload';
-
-
 
 @Component({
   selector: 'app-root',

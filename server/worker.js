@@ -76,7 +76,7 @@ const stateEnum = {
 var myState = stateEnum.WAITING;
 
 //Set Middlewares
-//*********************************************************
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 //Set Cors
@@ -87,7 +87,7 @@ app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   next();
 });
-//*********************************************************
+//{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
 
 //{{{{{{{{{{{{{{{{{{{{{{{{{Endpoints}}}}}}}}}}}}}}}}}}}}}}}}}
 app.get('/', function (req, res) {
@@ -179,11 +179,17 @@ function setup(){
     this.MAINSERVER ="http://"+process.argv[4]+"/";
     this.ADDRESS = "http://"+this.HOST +":"+this.PORT+"/";
     workersNodes = JSON.parse(process.argv[5]);
+    
+    if(process.argv.length > 6){
+        desableConsole = false;
+    }
+
     //***********************************************************
     app.listen(PORT, function () {
         console.log('Node.js server is running on port ' + PORT);
-        if(desableConsole == true);
-        console.log = function(){};
+        if(desableConsole == true){
+            console.log = function(){};
+        }
 
     });
     //***********************************************************
