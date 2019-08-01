@@ -34,8 +34,7 @@ For publishing the server and database, we used the Google Cloud platform, with 
 For publishing the web page, the free web host 000Webhost was used, with
 which it is possible to publish pages and obtain a web address for access.
 
-Several features are necessary to ensure the correct execution of distributed systems, to ensure mutually exclusion from a database we must solve a
-consensus problem between the nodes of the network. The proposed system
-was able to solve this problem using asynchronous programming techniques.
+Several features are necessary to ensure the correct execution of distributed systems, to ensure mutually exclusion from a database we must solve a consensus problem between the nodes of the network. The proposed system was able to solve this problem using asynchronous programming techniques.
+
 The system was tested by sending several simultaneous requests with different file numbers and it was able to behave properly, answering all requests
 correctly.
